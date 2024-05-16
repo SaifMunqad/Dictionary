@@ -11,11 +11,15 @@ using System.Windows.Forms;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Media;
+using NAudio.Wave;
+using System.Net;
 
 namespace Dictionary
 {
     public partial class Form1 : Form
     {
+        string audioSoundAddress = "";
         public Form1()
         {
             InitializeComponent();
@@ -34,19 +38,7 @@ namespace Dictionary
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            if(threadWord != null)
-            {
-                threadWord.Abort();
-                threadWord = null;
-                
-                threadWord = new Thread(checkingWordsAsync);
-                threadWord.Start();
-            }
-            else
-            {
-                threadWord = new Thread(checkingWordsAsync);
-                threadWord.Start();
-            }
+
         }
 
         private async void checkingWordsAsync()
@@ -54,29 +46,57 @@ namespace Dictionary
             string newString = "";
             using (var client = new HttpClient())
             {
-                try
+                /*try
+                {*/
+                //setting the path of API -- We Writing 100 words with meaning was hard...
+
+                var endpoint = new Uri("https://api.dictionaryapi.dev/api/v2/entries/en/" + wordTextBox.Text);
+
+                //waiting for the API server to response if the server doesn't anwer the the code will 
+                HttpResponseMessage response = await client.GetAsync(endpoint);
+                if (!response.IsSuccessStatusCode)
+                    return;
+                var result = client.GetAsync(endpoint).Result;
+                newString = result.Content.ReadAsStringAsync().Result;      //The ERROR is from here... 
+                //deserializing the JSON file into a list
+                List<JsonSTR> deserialized = JsonConvert.DeserializeObject<List<JsonSTR>>(newString);
+                //JsonSTR jsonSTR = JsonConvert.DeserializeObject<JsonSTR>(newString);
+                /*using (StreamWriter writer = new StreamWriter("log.json"))
                 {
-                    //setting the path of API --getting from the line 2 and line 8 of settings page which is saved in ./bin/config.bs
+                    writer.WriteLine(newString);
+                }*/
+                string phValues = "";
+                string soAddress = "";
+                string woValues = "";
+                string orValues = "";
 
-                    var endpoint = new Uri("https://api.dictionaryapi.dev/api/v2/entries/en/" + wordTextBox.Text);
-
-                    //waiting for the API server to response if the server doesn't anwer the the code will 
-                    HttpResponseMessage response = await client.GetAsync(endpoint);
-                    if (!response.IsSuccessStatusCode)
-                        return;
-                    var result = client.GetAsync(endpoint).Result;
-                    newString = result.Content.ReadAsStringAsync().Result;      //The ERROR is from here... 
-                    //deserializing the JSON file into a list
-                    List<JsonSTR> deserialized = JsonConvert.DeserializeObject<List<JsonSTR>>(newString);
-
-                    //meaningBox.Text += deserialized.word;
-                    //meaningBox.Text += deserialized.phonetic;
-                    //meaningBox.Text += deserialized.origin;
+                orValues = "Origin: " + deserialized[0].Origin;
+                foreach (PhoneticInfo phoneticInfo in deserialized[0].Phonetics)
+                {
+                    string phData = "Phonetics: " + phoneticInfo.Text + "\n";
+                    audioSoundAddress = phoneticInfo.Audio;
+                    phValues = phData + "\n\r";
                 }
+                foreach (Meaning meaning in deserialized[0].Meanings)
+                {
+                    string phData = "Part Of Speech: " + meaning.PartOfSpeech + "\n";
+                    woValues = phData + "\n\r";
+                }
+
+
+                //if (deserialized == null)
+                //return;
+                //value += deserialized[0].Word + "\n";
+                //value += deserialized[0].Meanings[0].PartOfSpeech + "\n";
+                //meaningBox.Text += deserialized.word;
+                //meaningBox.Text += deserialized.phonetic;
+                //meaningBox.Text += deserialized.origin;
+                FormChangesThread.changeText(phValues + "\n\r" + woValues + "\n\r" + orValues + "\n\r" + soAddress);
+                /*}
                 catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message);
-                }
+                }*/
             }
         }
 
@@ -94,6 +114,55 @@ namespace Dictionary
             {
                 threadWord = new Thread(checkingWordsAsync);
                 threadWord.Start();
+            }
+        }
+
+        private void wordTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (threadWord != null)
+            {
+                threadWord.Abort();
+                threadWord = null;
+
+                threadWord = new Thread(checkingWordsAsync);
+                threadWord.Start();
+            }
+            else
+            {
+                threadWord = new Thread(checkingWordsAsync);
+                threadWord.Start();
+            }
+        }
+
+        private void playButton_Click(object sender, EventArgs e)
+        {
+            using (Stream ms = new MemoryStream())
+            {
+                using (Stream stream = WebRequest.Create(audioSoundAddress).GetResponse().GetResponseStream())
+                {
+                    byte[] buffer = new byte[32768];
+                    int read;
+                    while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+                    {
+                        ms.Write(buffer, 0, read);
+                    }
+                }
+
+                ms.Position = 0;
+                using (WaveStream blockAlignedStream = new BlockAlignReductionStream(
+                    WaveFormatConversionStream.CreatePcmStream(new Mp3FileReader(ms))))
+                {
+                    using (WaveOut waveOut = new WaveOut(WaveCallbackInfo.FunctionCallback()))
+                    {
+                        waveOut.Init(blockAlignedStream);
+                        waveOut.Play();
+
+                        while (waveOut.PlaybackState == PlaybackState.Playing)
+                        {
+                            System.Threading.Thread.Sleep(100);
+                        }
+                    }
+                }
             }
         }
     }
