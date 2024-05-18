@@ -1,26 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
-using System.Media;
 using NAudio.Wave;
 using System.Net;
 
 namespace Dictionary
 {
-    public partial class Form1 : Form
+    public partial class Dictionary : Form
     {
         string audioSoundAddress = "";
-        public Form1()
+        public Dictionary()
         {
             InitializeComponent();
             Load += Form1_Load;
@@ -46,9 +40,8 @@ namespace Dictionary
             string newString = "";
             using (var client = new HttpClient())
             {
-                /*try
-                {*/
-                //setting the path of API -- We Writing 100 words with meaning was hard...
+                
+                //setting the path of API -- Writing 100 words with meaning was hard...
 
                 var endpoint = new Uri("https://api.dictionaryapi.dev/api/v2/entries/en/" + wordTextBox.Text);
 
@@ -60,11 +53,7 @@ namespace Dictionary
                 newString = result.Content.ReadAsStringAsync().Result;      //The ERROR is from here... 
                 //deserializing the JSON file into a list
                 List<JsonSTR> deserialized = JsonConvert.DeserializeObject<List<JsonSTR>>(newString);
-                //JsonSTR jsonSTR = JsonConvert.DeserializeObject<JsonSTR>(newString);
-                /*using (StreamWriter writer = new StreamWriter("log.json"))
-                {
-                    writer.WriteLine(newString);
-                }*/
+                
                 string phValues = "";
                 string soAddress = "";
                 string woValues = "";
@@ -84,19 +73,9 @@ namespace Dictionary
                 }
 
 
-                //if (deserialized == null)
-                //return;
-                //value += deserialized[0].Word + "\n";
-                //value += deserialized[0].Meanings[0].PartOfSpeech + "\n";
-                //meaningBox.Text += deserialized.word;
-                //meaningBox.Text += deserialized.phonetic;
-                //meaningBox.Text += deserialized.origin;
+
                 FormChangesThread.changeText(phValues + "\n\r" + woValues + "\n\r" + orValues + "\n\r" + soAddress);
-                /*}
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                }*/
+                
             }
         }
 

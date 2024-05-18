@@ -9,7 +9,7 @@ namespace Dictionary
 {
     public static class FormChangesThread
     {
-        public static Form1 FormHome = Application.OpenForms.OfType<Form1>().FirstOrDefault();
+        public static Dictionary FormHome = Application.OpenForms.OfType<Dictionary>().FirstOrDefault();
         public static void changeText(string Text)
         {
             chTexts(Text);

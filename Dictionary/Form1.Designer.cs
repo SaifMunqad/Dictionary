@@ -1,6 +1,6 @@
 ﻿namespace Dictionary
 {
-    partial class Form1
+    partial class Dictionary
     {
         /// <summary>
         /// Required designer variable.
@@ -38,6 +38,8 @@
             // 
             this.wordTextBox.AcceptsTab = true;
             this.wordTextBox.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.wordTextBox.AutoCompleteCustomSource.AddRange(new string[] {
+            "  "});
             this.wordTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.wordTextBox.Location = new System.Drawing.Point(54, 108);
             this.wordTextBox.Margin = new System.Windows.Forms.Padding(0);
@@ -79,7 +81,7 @@
             this.playButton.UseVisualStyleBackColor = true;
             this.playButton.Click += new System.EventHandler(this.playButton_Click);
             // 
-            // Form1
+            // Dictionary
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -89,9 +91,10 @@
             this.Controls.Add(this.meaningBox);
             this.Controls.Add(this.wordTextBox);
             this.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Margin = new System.Windows.Forms.Padding(4);
-            this.Name = "Form1";
+            this.MaximizeBox = false;
+            this.Name = "Dictionary";
             this.Text = "Form1";
             this.ResumeLayout(false);
             this.PerformLayout();
