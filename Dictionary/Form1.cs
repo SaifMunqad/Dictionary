@@ -13,7 +13,7 @@ namespace Dictionary
 {
     public partial class Dictionary : Form
     {
-        string audioSoundAddress = "";
+        string audioSoundAddress = null;
         public Dictionary()
         {
             InitializeComponent();
@@ -45,36 +45,86 @@ namespace Dictionary
 
                 var endpoint = new Uri("https://api.dictionaryapi.dev/api/v2/entries/en/" + wordTextBox.Text);
 
-                //waiting for the API server to response if the server doesn't anwer the the code will 
-                HttpResponseMessage response = await client.GetAsync(endpoint);
-                if (!response.IsSuccessStatusCode)
+                try
+                {
+                    //waiting for the API server to response if the server doesn't anwer the the code will 
+                    HttpResponseMessage response = await client.GetAsync(endpoint);
+
+
+                }catch (Exception ex)
+                {
+                    FormChangesThread.NoConnection("NoConnection");
                     return;
-                var result = client.GetAsync(endpoint).Result;
-                newString = result.Content.ReadAsStringAsync().Result;      //The ERROR is from here... 
-                //deserializing the JSON file into a list
-                List<JsonSTR> deserialized = JsonConvert.DeserializeObject<List<JsonSTR>>(newString);
+                }
+
+                try
+                {
+                    var result = client.GetAsync(endpoint).Result;
+                    newString = result.Content.ReadAsStringAsync().Result;      //The ERROR is from here... 
+                                                                                //deserializing the JSON file into a list
+
+
+
+                    List<JsonSTR> deserialized = JsonConvert.DeserializeObject<List<JsonSTR>>(newString);
+
+                    string phValues = "";
+                    string exampleValues = "";
+                    string meaningValues = "";
+                    string soAddress = "";
+                    string woValues = "";
+                    string orValues = "";
+                    if(deserialized[0].Origin != null)
+                    {
+                        orValues = "Origin: " + deserialized[0].Origin;
+                    }
+                    else
+                    {
+                        orValues = null;
+                    }
+                    
+                    foreach (PhoneticInfo phoneticInfo in deserialized[0].Phonetics)
+                    {
+                        string phData = "Phonetics: " + phoneticInfo.Text + "\n";
+                        audioSoundAddress = phoneticInfo.Audio;
+                        phValues = phData + "\n\r";
+                    }
+                    foreach (Meaning meaning in deserialized[0].Meanings)
+                    {
+
+                        string phData = "Part Of Speech: " + meaning.PartOfSpeech + "\n";
+                        woValues = phData + "\n\r";
+                    }
+
+
+                    if (deserialized[0].Meanings != null && deserialized[0].Meanings.Count > 0)
+                    {
+                        Meaning firstMeaning = deserialized[0].Meanings[0];
+                        if (firstMeaning.Definitions != null && firstMeaning.Definitions.Count > 0)
+                        {
+                            DefinitionInfo firstDefinitionInfo = firstMeaning.Definitions[0];
+
+                            // Getting Data Form DefinitionInfo
+                            string definition = firstDefinitionInfo.Definition;
+                            string example = firstDefinitionInfo.Example;
+                            List<string> synonyms = firstDefinitionInfo.Synonyms;
+                            List<string> antonyms = firstDefinitionInfo.Antonyms;
+                            meaningValues = "Definition: " + definition + "\n\r";
+                            exampleValues = "Example: " + example;
+
+                        }
+                    }
+
+
+
+
+
+
+                    FormChangesThread.changeText(phValues + "\n\r" + woValues + "\n\r" + orValues + "\n\r" + soAddress + "\n\r" + "\n\r" + meaningValues + "\n\r" + "\n\r" + exampleValues);
+                }catch (Exception ex)
+                {
+
+                }
                 
-                string phValues = "";
-                string soAddress = "";
-                string woValues = "";
-                string orValues = "";
-
-                orValues = "Origin: " + deserialized[0].Origin;
-                foreach (PhoneticInfo phoneticInfo in deserialized[0].Phonetics)
-                {
-                    string phData = "Phonetics: " + phoneticInfo.Text + "\n";
-                    audioSoundAddress = phoneticInfo.Audio;
-                    phValues = phData + "\n\r";
-                }
-                foreach (Meaning meaning in deserialized[0].Meanings)
-                {
-                    string phData = "Part Of Speech: " + meaning.PartOfSpeech + "\n";
-                    woValues = phData + "\n\r";
-                }
-
-
-
-                FormChangesThread.changeText(phValues + "\n\r" + woValues + "\n\r" + orValues + "\n\r" + soAddress);
                 
             }
         }
@@ -117,15 +167,23 @@ namespace Dictionary
         {
             using (Stream ms = new MemoryStream())
             {
-                using (Stream stream = WebRequest.Create(audioSoundAddress).GetResponse().GetResponseStream())
+                if(audioSoundAddress != null)
                 {
-                    byte[] buffer = new byte[32768];
-                    int read;
-                    while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+                    using (Stream stream = WebRequest.Create(audioSoundAddress).GetResponse().GetResponseStream())
                     {
-                        ms.Write(buffer, 0, read);
+                        byte[] buffer = new byte[32768];
+                        int read;
+                        while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            ms.Write(buffer, 0, read);
+                        }
                     }
                 }
+                else
+                {
+                    return;
+                }
+                
 
                 ms.Position = 0;
                 using (WaveStream blockAlignedStream = new BlockAlignReductionStream(

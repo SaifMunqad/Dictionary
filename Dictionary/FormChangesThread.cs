@@ -26,47 +26,39 @@ namespace Dictionary
                     FormHome.meaningBox.Text = "";
                     FormHome.meaningBox.Text = Text;
                 }
+        }
 
-            //if Device Connected
-            /*if (color == "Connected")
+        public static void NoConnection(string Text)
+        {
+            NoConn(Text);
+        }
+        private delegate void NoConnection_Delegate();
+        private static void NoConn(string Text)
+        {
+            if(Text == "NoConnection")
             {
-                if (FormConnect.connectButton1.InvokeRequired)
+                if (FormHome.connectionLabel.InvokeRequired)
                 {
-                    FormConnect.connectButton1.Invoke(new Colors_Delegate(() => chColors(color)), new object[] { });
+                    FormHome.connectionLabel.Invoke(new NoConnection_Delegate(() => NoConn(Text)), new object[] { });
                 }
                 else
                 {
-                    FormConnect.connectButton1.BackColor = Color.Green;
-                    //FormConnect.connectButton1.Enabled = false;
-                    FormConnect.connectButton1.Text = "Connected";
-                    FormConnect.connectButton1.ForeColor = Color.White;
-                }
-
-                if (FormConnect.portCombo1.InvokeRequired)
-                {
-                    FormConnect.portCombo1.Invoke(new Colors_Delegate(() => chColors(color)), new object[] { });
-                }
-                else
-                {
-                    FormConnect.portCombo1.Enabled = false;
+                    FormHome.connectionLabel.Visible = true;
                 }
             }
-            else //if device not connected or disconnected
+            else
             {
-                if (FormConnect.connectButton1.InvokeRequired)
+                if (FormHome.connectionLabel.InvokeRequired)
                 {
-                    FormConnect.connectButton1.Invoke(new Colors_Delegate(() => chColors(color)), new object[] { });
+                    FormHome.connectionLabel.Invoke(new NoConnection_Delegate(() => NoConn(Text)), new object[] { });
                 }
                 else
                 {
-                    FormConnect.connectButton1.BackColor = Color.Red;
-                    FormConnect.connectButton1.ForeColor = Color.White;
-                    FormConnect.connectButton1.Text = "Disconnected";
+                    FormHome.connectionLabel.Text = "Connection Restored!";
+                    FormHome.connectionLabel.Visible = true;
                 }
-            }*/
-
-
-
+            }
+            
         }
     }
 }
