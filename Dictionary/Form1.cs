@@ -14,6 +14,7 @@ namespace Dictionary
     public partial class Dictionary : Form
     {
         string audioSoundAddress = null;
+        string TypedWord;
         public Dictionary()
         {
             InitializeComponent();
@@ -37,7 +38,6 @@ namespace Dictionary
 
         private async void checkingWordsAsync()
         {
-            string word = wordTextBox.Text;
             string newString = "";
             using (var client = new HttpClient())
             {
@@ -51,14 +51,18 @@ namespace Dictionary
                     //waiting for the API server to response if the server doesn't anwer the the code will 
                     HttpResponseMessage response = await client.GetAsync(endpoint);
 
+                    if(connectionLabel.Visible == true)
+                        FormChangesThread.NoConnection("ConnectionRestored");
 
                 }catch (Exception ex)
                 {
                     FormChangesThread.NoConnection("NoConnection");
                     return;
                 }
-                if (word != wordTextBox.Text)
+
+                if (TypedWord != wordTextBox.Text)
                     return;
+
                 try
                 {
                     var result = client.GetAsync(endpoint).Result;
@@ -68,6 +72,9 @@ namespace Dictionary
 
 
                     List<JsonSTR> deserialized = JsonConvert.DeserializeObject<List<JsonSTR>>(newString);
+
+                    if (TypedWord != wordTextBox.Text)
+                        return;
 
                     string phValues = "";
                     string exampleValues = "";
@@ -97,6 +104,8 @@ namespace Dictionary
                         woValues = phData + "\n\r";
                     }
 
+                    if (TypedWord != wordTextBox.Text)
+                        return;
 
                     if (deserialized[0].Meanings != null && deserialized[0].Meanings.Count > 0)
                     {
@@ -152,6 +161,7 @@ namespace Dictionary
         {
             if (threadWord != null)
             {
+                TypedWord = wordTextBox.Text;
                 threadWord.Abort();
                 threadWord = null;
                 //Thread.Sleep(2);
@@ -160,6 +170,7 @@ namespace Dictionary
             }
             else
             {
+                TypedWord = wordTextBox.Text;
                 threadWord = new Thread(checkingWordsAsync);
                 threadWord.Start();
             }

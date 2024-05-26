@@ -40,6 +40,7 @@ namespace Dictionary
                 else
                 {
                     FormHome.connectionLabel.Visible = true;
+                    FormHome.connectionLabel.Text = "No Network Connection!";
                 }
             }
             else
