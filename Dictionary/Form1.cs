@@ -37,6 +37,7 @@ namespace Dictionary
 
         private async void checkingWordsAsync()
         {
+            string word = wordTextBox.Text;
             string newString = "";
             using (var client = new HttpClient())
             {
@@ -56,7 +57,8 @@ namespace Dictionary
                     FormChangesThread.NoConnection("NoConnection");
                     return;
                 }
-
+                if (word != wordTextBox.Text)
+                    return;
                 try
                 {
                     var result = client.GetAsync(endpoint).Result;
@@ -152,7 +154,7 @@ namespace Dictionary
             {
                 threadWord.Abort();
                 threadWord = null;
-
+                //Thread.Sleep(2);
                 threadWord = new Thread(checkingWordsAsync);
                 threadWord.Start();
             }
